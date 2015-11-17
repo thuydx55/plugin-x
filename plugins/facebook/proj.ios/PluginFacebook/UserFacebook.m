@@ -37,6 +37,20 @@ bool _isLogin = false;
 NSString *_userId = @"";
 NSString *_accessToken = @"";
 
+- (id) init {
+  if (self = [super init]) {
+    if (FBSession.activeSession.state == FBSessionStateCreatedTokenLoaded) {
+      // Even though we had a cached token, we need to login to make the session usable:
+      [FBSession.activeSession openWithCompletionHandler:^(FBSession *session, FBSessionState state, NSError *error) {
+        [self sessionStateChanged:session state:state error:error];
+      }];
+    }
+    return self;
+  }
+  else
+    return nil;
+}
+
 - (void) configDeveloperInfo : (NSMutableDictionary*) cpInfo{
 }
 - (void) login{
@@ -67,13 +81,13 @@ NSString *_accessToken = @"";
     }
 }
 - (BOOL) isLogined{
-    return _isLogin;
+    return FBSession.activeSession.state == FBSessionStateOpen || FBSessionStateOpen == FBSessionStateOpenTokenExtended;
 }
 -(NSString *)getUserID{
     return _userId;
 }
 - (BOOL) isLoggedIn{
-    return _isLogin;
+    return [self isLogined];
 }
 
 -(NSString *) getPermissionList{
